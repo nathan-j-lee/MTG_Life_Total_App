@@ -166,7 +166,9 @@ open class LifeCounterViewModel(
                 timerManager.handleFirstPlayerSelection(index = seatId.toPlayerIndex())
             }
             PlayerButtonAction.MoveTimer -> {
-                timerManager.moveTimer()
+                if (_state.value.players.any { it.seatId == seatId && it.timer != null }) {
+                    timerManager.moveTimer()
+                }
             }
             PlayerButtonAction.OpenCustomization,
             PlayerButtonAction.CloseCustomization -> onPlayerCustomizationAction(seatId, action)

@@ -146,19 +146,16 @@ fun LifeCounterScreen(
                                 playerButton = {
                                     PlayerButton(
                                         modifier = Modifier.size(width, height),
-                                        turnTimerModifier = Modifier.align(placement.timerAlignment).then(
-                                            when (placement.timerAlignment) {
-                                                Alignment.TopStart -> Modifier.align(Alignment.TopStart)
-                                                    .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-                                                    .border(dimensions.paddingTiny, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(topCornerRadius, 0.dp, topCornerRadius, 0.dp))
-
-                                                Alignment.TopEnd -> Modifier.align(Alignment.TopEnd)
-                                                    .background(color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
-                                                    .border(dimensions.paddingTiny, timerColor.copy(alpha = 0.8f), shape = RoundedCornerShape(0.dp, topCornerRadius, 0.dp, topCornerRadius))
-
-                                                else -> Modifier
-                                            }
-                                        ),
+                                        turnTimerModifier = Modifier.align(Alignment.TopCenter)
+                                            .background(
+                                                color = timerColor.blendWith(Color.Black).copy(alpha = 0.25f),
+                                                shape = RoundedCornerShape(0.dp, 0.dp, topCornerRadius, topCornerRadius)
+                                            )
+                                            .border(
+                                                dimensions.paddingTiny,
+                                                timerColor.copy(alpha = 0.8f),
+                                                shape = RoundedCornerShape(0.dp, 0.dp, topCornerRadius, topCornerRadius)
+                                            ),
                                         state = playerSeatState,
                                         customizationViewModel = viewModel.customizationViewModelFor(seatId),
                                         onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },

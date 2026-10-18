@@ -98,7 +98,7 @@ fun TutorialPage1(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Tap up/down on a player to adjust their life total",
+                        text = "Tap the left side of a player to lose life, or the right side to gain life. When the turn timer is enabled, tap the middle of the active player's counter to pass the turn.",
                         fontSize = 20.scaledSp,
                         textAlign = TextAlign.Center,
                         color = Color.White,

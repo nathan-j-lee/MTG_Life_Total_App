@@ -47,6 +47,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -123,6 +125,8 @@ fun PlayerButton(
 
     var timerTextSize by remember(Unit) { mutableStateOf(15) }
     var timerPadding by remember(Unit) { mutableStateOf(5) }
+    var timerHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
     // Stops the repeating bounce after the timer is clicked.
     var timerJustClicked by remember { mutableStateOf(false) }
 
@@ -131,8 +135,9 @@ fun PlayerButton(
         val textSize = timerTextSize.scaledSp
         val padding = timerPadding.dp
         val playerNumber = state.player.playerNum
-        Column(
+        Row(
             modifier = modifier
+                .onSizeChanged { timerHeight = with(density) { it.height.toDp() } }
                 .semantics {
                     contentDescription = "P$playerNumber active turn timer"
                 }
@@ -141,7 +146,10 @@ fun PlayerButton(
                     timerJustClicked = true
                     currentOnAction(PlayerButtonAction.MoveTimer)
                 }
-                .wrapContentSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(padding)
+                .wrapContentSize()
+                .padding(horizontal = padding * 2, vertical = padding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(padding * 2)
         ) {
             Text(
                 text = timer.getTimeString(),
@@ -150,7 +158,6 @@ fun PlayerButton(
                 lineHeight = textSize,
                 textAlign = TextAlign.Center,
                 style = defaultTextStyle(),
-                modifier = Modifier.padding(horizontal = padding * 3.5f).padding(top = padding * 1.5f)
             )
             Text(
                 text = "Turn ${timer.turn}",
@@ -159,7 +166,6 @@ fun PlayerButton(
                 lineHeight = textSize,
                 textAlign = TextAlign.Center,
                 style = defaultTextStyle(),
-                modifier = Modifier.padding(horizontal = padding * 3.5f).padding(bottom = padding * 1.5f)
             )
         }
     }
@@ -240,6 +246,15 @@ fun PlayerButton(
                                 modifier = Modifier.fillMaxWidth(),
                                 incrementContentDescription = "P$playerNumber increase life",
                                 decrementContentDescription = "P$playerNumber decrease life",
+                                horizontalLayout = true,
+                                centerContentDescription = "P$playerNumber pass turn",
+                                onCenterTap = if (state.timer != null) {
+                                    {
+                                        timerJustClicked = true
+                                        onAction(PlayerButtonAction.MoveTimer)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                } else null,
                                 onIncrementLife = {
                                     onAction(PlayerButtonAction.IncrementLife)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -355,7 +370,9 @@ fun PlayerButton(
                                                 }
                                         )
                                         LifeNumber(
-                                            modifier = Modifier.fillMaxSize(),
+                                            modifier = Modifier.fillMaxSize().padding(
+                                                top = if (state.timer != null) timerHeight else 0.dp
+                                            ),
                                             name = state.player.name,
                                             textColor = state.player.textColor,
                                             value = state.player.lifeTotal,

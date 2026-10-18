@@ -1,5 +1,6 @@
 package ui.lifecounter.playerbutton
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -263,7 +264,39 @@ fun LifeChangeButtons(
     onDecrementLife: () -> Unit,
     incrementContentDescription: String,
     decrementContentDescription: String,
+    horizontalLayout: Boolean = false,
+    onCenterTap: (() -> Unit)? = null,
+    centerContentDescription: String = "Pass turn",
 ) {
+    if (horizontalLayout) {
+        Row(modifier = modifier.fillMaxSize()) {
+            CustomIncrementButton(
+                modifier = Modifier.weight(0.35f).fillMaxHeight(),
+                onIncrementLife = onDecrementLife,
+                contentDescription = decrementContentDescription,
+            )
+
+            Box(
+                modifier = Modifier.weight(0.30f).fillMaxHeight().then(
+                    if (onCenterTap != null) {
+                        Modifier.clickable(onClick = onCenterTap).semantics {
+                            contentDescription = centerContentDescription
+                        }
+                    } else {
+                        Modifier
+                    }
+                )
+            )
+
+            CustomIncrementButton(
+                modifier = Modifier.weight(0.35f).fillMaxHeight(),
+                onIncrementLife = onIncrementLife,
+                contentDescription = incrementContentDescription,
+            )
+        }
+        return
+    }
+
     Column(modifier = modifier) {
         CustomIncrementButton(
             modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f),
