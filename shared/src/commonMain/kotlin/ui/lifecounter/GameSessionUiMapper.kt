@@ -73,6 +73,10 @@ object GameSessionUiMapper {
             buttonBackStack = buttonBackStack,
             showCustomizeMenu = current?.showCustomizeMenu ?: false,
             timer = current?.timer,
+            chessTimerSeconds = current?.chessTimerSeconds ?: 0,
+            chessTimerRunning = current?.chessTimerRunning ?: false,
+            chessTimerCountdown = current?.chessTimerCountdown ?: false,
+            chessTimerLimitSeconds = current?.chessTimerLimitSeconds ?: 3000,
             commanderState = commanderDealerPlayer?.let(ui.lifecounter.playerbutton.CommanderState::Active)
                 ?: ui.lifecounter.playerbutton.CommanderState.Inactive,
             isDead = seat.isDead(autoKo = autoKo, commander = session.commander),

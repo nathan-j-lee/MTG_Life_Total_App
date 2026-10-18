@@ -23,6 +23,8 @@ interface LifeCounterScreenController {
     fun setNumPlayers(value: Int)
     fun onCommanderDealerButtonClicked()
     fun onPlayerButtonAction(seatId: SeatId, action: PlayerButtonAction)
+    fun toggleChessTimer(seatId: SeatId)
+    fun passChessTimerTurn()
     fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel?
     fun savePlayerPrefs()
     fun resetAllPrefs()

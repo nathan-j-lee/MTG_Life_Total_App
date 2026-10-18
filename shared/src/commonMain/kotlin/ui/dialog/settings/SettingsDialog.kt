@@ -19,13 +19,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -82,6 +88,10 @@ fun SettingsDialogContent(
 ) {
     val uriHandler = LocalUriHandler.current
     val dimensions = LocalDimensions.current
+    val chessTimerMinutes by preferencesRepository.chessTimerMinutes.collectAsState()
+    val chessTimerCountdown by preferencesRepository.chessTimerCountdown.collectAsState()
+    var showChessTimerMinutesDialog by remember { mutableStateOf(false) }
+    var chessTimerMinutesInput by remember { mutableStateOf("") }
 
     BoxWithConstraints(modifier) {
         val buttonHeight = remember(Unit) { 10.dp + maxWidth / 10f }
@@ -148,6 +158,22 @@ fun SettingsDialogContent(
                             preferencesRepository.setTurnTimer(it)
                         },
                         icon = vectorResource(Res.drawable.timer_icon)
+                    )
+                    SettingsDialogButton(
+                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                        text = "Chess Timer: $chessTimerMinutes minutes per player",
+                        icon = vectorResource(Res.drawable.timer_icon),
+                        onTap = {
+                            chessTimerMinutesInput = chessTimerMinutes.toString()
+                            showChessTimerMinutesDialog = true
+                        }
+                    )
+                    SettingsDialogButtonWithToggle(
+                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
+                        text = "Chess Timer Countdown (lose at 0)",
+                        initialState = chessTimerCountdown,
+                        toggle = preferencesRepository::setChessTimerCountdown,
+                        icon = vectorResource(Res.drawable.skull_icon)
                     )
                     SettingsDialogButton(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
@@ -283,6 +309,37 @@ fun SettingsDialogContent(
             }
 
         }
+    }
+
+    if (showChessTimerMinutesDialog) {
+        val requestedMinutes = chessTimerMinutesInput.toIntOrNull()?.takeIf { it in 1..999 }
+        AlertDialog(
+            onDismissRequest = { showChessTimerMinutesDialog = false },
+            title = { Text("Chess timer per player") },
+            text = {
+                OutlinedTextField(
+                    value = chessTimerMinutesInput,
+                    onValueChange = { input ->
+                        if (input.length <= 3 && input.all(Char::isDigit)) chessTimerMinutesInput = input
+                    },
+                    label = { Text("Minutes (1–999)") },
+                    singleLine = true,
+                    isError = requestedMinutes == null,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = requestedMinutes != null,
+                    onClick = {
+                        requestedMinutes?.let(preferencesRepository::setChessTimerMinutes)
+                        showChessTimerMinutesDialog = false
+                    }
+                ) { Text("Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showChessTimerMinutesDialog = false }) { Text("Cancel") }
+            }
+        )
     }
 }
 

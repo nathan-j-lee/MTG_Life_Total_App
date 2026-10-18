@@ -61,6 +61,14 @@ class PreferencesRepository(
     val turnTimer: StateFlow<Boolean> = _turnTimer.asStateFlow()
     fun setTurnTimer(value: Boolean) = putBoolean(Keys.TurnTimer, value, _turnTimer)
 
+    private val _chessTimerMinutes = MutableStateFlow(settings.getInt(Keys.ChessTimerMinutes, 50).coerceIn(1, 999))
+    val chessTimerMinutes: StateFlow<Int> = _chessTimerMinutes.asStateFlow()
+    fun setChessTimerMinutes(value: Int) = putInt(Keys.ChessTimerMinutes, value.coerceIn(1, 999), _chessTimerMinutes)
+
+    private val _chessTimerCountdown = MutableStateFlow(settings.getBoolean(Keys.ChessTimerCountdown, false))
+    val chessTimerCountdown: StateFlow<Boolean> = _chessTimerCountdown.asStateFlow()
+    fun setChessTimerCountdown(value: Boolean) = putBoolean(Keys.ChessTimerCountdown, value, _chessTimerCountdown)
+
     private val _devMode = MutableStateFlow(settings.getBoolean(Keys.DevMode, false))
     val devMode: StateFlow<Boolean> = _devMode.asStateFlow()
     fun setDevMode(value: Boolean) = putBoolean(Keys.DevMode, value, _devMode)
@@ -94,6 +102,8 @@ class PreferencesRepository(
         const val TutorialSkip = "tutorialSkip"
         const val LastSplashScreenShown = "lastSplashScreenShown"
         const val TurnTimer = "turnTimer"
+        const val ChessTimerMinutes = "chessTimerMinutes"
+        const val ChessTimerCountdown = "chessTimerCountdown"
         const val DevMode = "devMode"
     }
 }

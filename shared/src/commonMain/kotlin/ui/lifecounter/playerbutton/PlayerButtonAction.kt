@@ -24,6 +24,8 @@ sealed interface PlayerButtonAction {
     data object CloseCustomization : PlayerButtonAction
     data object SelectFirstPlayer : PlayerButtonAction
     data object MoveTimer : PlayerButtonAction
+    data object ToggleChessTimer : PlayerButtonAction
+    data object PassTurn : PlayerButtonAction
 }
 
 fun PlayerButtonAction.toGameCommands(
@@ -90,7 +92,9 @@ fun PlayerButtonAction.toGameCommands(
         PlayerButtonAction.OpenCustomization,
         PlayerButtonAction.CloseCustomization,
         PlayerButtonAction.SelectFirstPlayer,
-        PlayerButtonAction.MoveTimer -> emptyList()
+        PlayerButtonAction.MoveTimer,
+        PlayerButtonAction.ToggleChessTimer,
+        PlayerButtonAction.PassTurn -> emptyList()
     }
 }
 

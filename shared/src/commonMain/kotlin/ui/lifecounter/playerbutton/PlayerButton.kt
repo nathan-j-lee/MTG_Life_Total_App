@@ -55,7 +55,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import domain.common.NumberWithRecentChange
-import domain.game.timer.TurnTimer
 import domain.system.SystemManager
 import lifelinked.shared.generated.resources.Res
 import lifelinked.shared.generated.resources.back_icon
@@ -65,6 +64,7 @@ import lifelinked.shared.generated.resources.monarchy_icon
 import lifelinked.shared.generated.resources.one_finger_tap
 import lifelinked.shared.generated.resources.pencil_icon
 import lifelinked.shared.generated.resources.settings_icon
+import lifelinked.shared.generated.resources.skip_icon
 import lifelinked.shared.generated.resources.skull_icon
 import lifelinked.shared.generated.resources.sword_icon
 import lifelinked.shared.generated.resources.sword_icon_double
@@ -131,20 +131,20 @@ fun PlayerButton(
     var timerJustClicked by remember { mutableStateOf(false) }
 
     @Composable
-    fun Timer(modifier: Modifier = Modifier, timer: TurnTimer) {
+    fun Timer(modifier: Modifier = Modifier, seconds: Int, running: Boolean) {
         val textSize = timerTextSize.scaledSp
         val padding = timerPadding.dp
         val playerNumber = state.player.playerNum
+        val displayedSeconds = if (state.chessTimerCountdown) {
+            (state.chessTimerLimitSeconds - seconds).coerceAtLeast(0)
+        } else {
+            seconds
+        }
         Row(
             modifier = modifier
                 .onSizeChanged { timerHeight = with(density) { it.height.toDp() } }
                 .semantics {
-                    contentDescription = "P$playerNumber active turn timer"
-                }
-                .clickable {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    timerJustClicked = true
-                    currentOnAction(PlayerButtonAction.MoveTimer)
+                    contentDescription = "P$playerNumber ${if (state.chessTimerCountdown) "countdown" else "elapsed"} timer ${displayedSeconds / 60}:${(displayedSeconds % 60).toString().padStart(2, '0')} ${if (running) "running" else "paused"}"
                 }
                 .wrapContentSize()
                 .padding(horizontal = padding * 2, vertical = padding),
@@ -152,7 +152,7 @@ fun PlayerButton(
             horizontalArrangement = Arrangement.spacedBy(padding * 2)
         ) {
             Text(
-                text = timer.getTimeString(),
+                text = "${displayedSeconds / 60}:${(displayedSeconds % 60).toString().padStart(2, '0')}",
                 color = state.player.textColor,
                 fontSize = textSize,
                 lineHeight = textSize,
@@ -160,7 +160,17 @@ fun PlayerButton(
                 style = defaultTextStyle(),
             )
             Text(
-                text = "Turn ${timer.turn}",
+                modifier = Modifier
+                    .clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        timerJustClicked = true
+                        currentOnAction(PlayerButtonAction.ToggleChessTimer)
+                    }
+                    .semantics {
+                        contentDescription = "${if (running) "Pause" else "Start"} P$playerNumber timer"
+                    }
+                    .padding(horizontal = padding, vertical = padding / 2),
+                text = if (running) "Ⅱ" else "▶",
                 color = state.player.textColor,
                 fontSize = textSize,
                 lineHeight = textSize,
@@ -247,14 +257,11 @@ fun PlayerButton(
                                 incrementContentDescription = "P$playerNumber increase life",
                                 decrementContentDescription = "P$playerNumber decrease life",
                                 horizontalLayout = true,
-                                centerContentDescription = "P$playerNumber pass turn",
-                                onCenterTap = if (state.timer != null) {
-                                    {
-                                        timerJustClicked = true
-                                        onAction(PlayerButtonAction.MoveTimer)
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    }
-                                } else null,
+                                centerContentDescription = "P$playerNumber ${if (state.chessTimerRunning) "pause" else "start"} timer",
+                                onCenterTap = {
+                                    onAction(PlayerButtonAction.ToggleChessTimer)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                },
                                 onIncrementLife = {
                                     onAction(PlayerButtonAction.IncrementLife)
                                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -371,7 +378,7 @@ fun PlayerButton(
                                         )
                                         LifeNumber(
                                             modifier = Modifier.fillMaxSize().padding(
-                                                top = if (state.timer != null) timerHeight else 0.dp
+                                                top = timerHeight
                                             ),
                                             name = state.player.name,
                                             textColor = state.player.textColor,
@@ -751,10 +758,23 @@ fun PlayerButton(
                         }
                     }
                 }
-                val timer = state.timer
-                if (timer != null && state.buttonState == PBState.NORMAL) {
-                    Timer(modifier = turnTimerModifier, timer = timer)
-                }
+                Timer(
+                    modifier = turnTimerModifier,
+                    seconds = state.chessTimerSeconds,
+                    running = state.chessTimerRunning,
+                )
+                SettingsButton(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(start = 8.dp, top = 8.dp)
+                        .size(smallButtonSize * 1.6f),
+                    shape = RoundedCornerShape(8.dp),
+                    backgroundColor = state.player.color.copy(alpha = 0.72f),
+                    mainColor = state.player.textColor,
+                    imageVector = vectorResource(Res.drawable.skip_icon),
+                    contentDescription = "Pass turn to next player",
+                    onPress = { currentOnAction(PlayerButtonAction.PassTurn) },
+                )
             }
         }
     }

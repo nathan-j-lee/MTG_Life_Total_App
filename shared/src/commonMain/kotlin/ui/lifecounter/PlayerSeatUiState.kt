@@ -13,6 +13,10 @@ data class PlayerSeatUiState(
     val buttonBackStack: List<PBState> = emptyList(),
     val showCustomizeMenu: Boolean = false,
     val timer: TurnTimer? = null,
+    val chessTimerSeconds: Int = 0,
+    val chessTimerRunning: Boolean = false,
+    val chessTimerCountdown: Boolean = false,
+    val chessTimerLimitSeconds: Int = 3000,
     val commanderState: CommanderState = CommanderState.Inactive,
     val isDead: Boolean = false,
     val backButtonVisible: Boolean = false

@@ -62,6 +62,35 @@ open class LifeCounterViewModel(
             timerManager.registerTimerStateObserver()
         }
         viewModelScope.launch {
+            while (true) {
+                delay(1_000L)
+                _state.update { it.tickChessTimer() }
+                val currentState = _state.value
+                val runningSeatId = currentState.runningChessTimerSeat
+                val timedOutPlayer = currentState.players.firstOrNull { it.seatId == runningSeatId }
+                if (preferencesRepository.chessTimerCountdown.value && timedOutPlayer != null &&
+                    !timedOutPlayer.isDead && timedOutPlayer.chessTimerSeconds >= timedOutPlayer.chessTimerLimitSeconds
+                ) {
+                    _state.update { it.toggleChessTimer(timedOutPlayer.seatId) }
+                    dispatchGameCommand(GameCommand.SetManualDeath(timedOutPlayer.seatId, dead = true))
+                }
+            }
+        }
+        viewModelScope.launch {
+            preferencesRepository.chessTimerMinutes.collect { minutes ->
+                _state.update { state ->
+                    state.copy(players = state.players.map { it.copy(chessTimerLimitSeconds = minutes * 60) })
+                }
+            }
+        }
+        viewModelScope.launch {
+            preferencesRepository.chessTimerCountdown.collect { countdown ->
+                _state.update { state ->
+                    state.copy(players = state.players.map { it.copy(chessTimerCountdown = countdown) })
+                }
+            }
+        }
+        viewModelScope.launch {
             gameSessionStore.loadActiveSession()
             gameSessionStore.session.collect { session ->
                 if (session != null) applyGameSession(session)
@@ -170,10 +199,20 @@ open class LifeCounterViewModel(
                     timerManager.moveTimer()
                 }
             }
+            PlayerButtonAction.ToggleChessTimer -> toggleChessTimer(seatId)
+            PlayerButtonAction.PassTurn -> passChessTimerTurn()
             PlayerButtonAction.OpenCustomization,
             PlayerButtonAction.CloseCustomization -> onPlayerCustomizationAction(seatId, action)
             else -> dispatchPlayerButtonAction(seatId, action)
         }
+    }
+
+    override fun toggleChessTimer(seatId: SeatId) {
+        _state.update { it.toggleChessTimer(seatId) }
+    }
+
+    override fun passChessTimerTurn() {
+        _state.update { it.passChessTimerTurn(playerCount) }
     }
 
     override fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
@@ -328,6 +367,7 @@ open class LifeCounterViewModel(
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
         timerManager.reset()
+        _state.update { it.resetChessTimers() }
     }
 
     override fun toggleKeepScreenOn(value: Boolean?) {

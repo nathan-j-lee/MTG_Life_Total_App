@@ -16,10 +16,44 @@ data class LifeCounterState(
     val players: List<PlayerSeatUiState> = emptyList(),
     val modalStack: LifeCounterModalStack = LifeCounterModalStack.Empty,
     val middleButtonState: MiddleButtonState = MiddleButtonState.DEFAULT,
+    val runningChessTimerSeat: SeatId? = null,
+    val selectedChessTimerSeat: SeatId? = null,
 ) {
     val currentModal: LifeCounterModal? get() = modalStack.current
     val isModalOpen: Boolean get() = currentModal != null
 }
+
+fun LifeCounterState.toggleChessTimer(seatId: SeatId): LifeCounterState {
+    val nextRunningSeat = if (runningChessTimerSeat == seatId) null else seatId
+    return withRunningChessTimer(nextRunningSeat, selectedSeatId = seatId)
+}
+
+fun LifeCounterState.tickChessTimer(): LifeCounterState {
+    val runningSeat = runningChessTimerSeat ?: return this
+    return copy(players = players.map { player ->
+        if (player.seatId == runningSeat) player.copy(chessTimerSeconds = player.chessTimerSeconds + 1) else player
+    })
+}
+
+fun LifeCounterState.resetChessTimers(): LifeCounterState = copy(
+    runningChessTimerSeat = null,
+    selectedChessTimerSeat = null,
+    players = players.map { it.copy(chessTimerSeconds = 0, chessTimerRunning = false) }
+)
+
+fun LifeCounterState.passChessTimerTurn(playerCount: Int): LifeCounterState {
+    val activePlayers = players.take(playerCount).filterNot { it.isDead }
+    if (activePlayers.isEmpty()) return copy(runningChessTimerSeat = null)
+    val currentIndex = activePlayers.indexOfFirst { it.seatId == selectedChessTimerSeat }
+    val nextPlayer = activePlayers[(currentIndex + 1).mod(activePlayers.size)]
+    return withRunningChessTimer(nextPlayer.seatId, selectedSeatId = nextPlayer.seatId)
+}
+
+private fun LifeCounterState.withRunningChessTimer(seatId: SeatId?, selectedSeatId: SeatId?): LifeCounterState = copy(
+    runningChessTimerSeat = seatId,
+    selectedChessTimerSeat = selectedSeatId,
+    players = players.map { player -> player.copy(chessTimerRunning = player.seatId == seatId) }
+)
 
 enum class MiddleButtonState {
     DEFAULT, COMMANDER_EXIT

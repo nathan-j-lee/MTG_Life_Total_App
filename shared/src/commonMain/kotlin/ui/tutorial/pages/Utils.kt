@@ -51,6 +51,8 @@ import ui.lifecounter.LifeCounterState
 import ui.lifecounter.MiddleButtonState
 import ui.lifecounter.PlayerSeatUiState
 import ui.lifecounter.closePlayerCustomization
+import ui.lifecounter.toggleChessTimer
+import ui.lifecounter.passChessTimerTurn
 import ui.lifecounter.openPlayerCounterSelection
 import ui.lifecounter.openPlayerCounters
 import ui.lifecounter.openPlayerCustomization
@@ -335,13 +337,23 @@ class TutorialLifeCounterController(
                 applyCustomizationAndClose(seatId)
             }
             PlayerButtonAction.SelectFirstPlayer,
-            PlayerButtonAction.MoveTimer -> Unit
+            PlayerButtonAction.MoveTimer,
+            PlayerButtonAction.ToggleChessTimer -> Unit
+            PlayerButtonAction.PassTurn -> passChessTimerTurn()
         }
         afterPlayerAction(seatId, action, _state.value)
     }
 
     override fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
         return customizationViewModels[seatId]
+    }
+
+    override fun toggleChessTimer(seatId: SeatId) {
+        _state.value = _state.value.toggleChessTimer(seatId)
+    }
+
+    override fun passChessTimerTurn() {
+        _state.value = _state.value.passChessTimerTurn(numPlayers.value)
     }
 
     override fun savePlayerPrefs() = Unit
