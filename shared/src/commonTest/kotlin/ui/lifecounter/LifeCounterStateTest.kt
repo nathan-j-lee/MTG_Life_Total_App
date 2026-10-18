@@ -12,6 +12,28 @@ import ui.lifecounter.playerbutton.PBState
 
 class LifeCounterStateTest {
     @Test
+    fun firstPlayerSelectionLocksUntilTheTurnOrderIsChosen() {
+        val prompted = stateWithSeats(4).promptForFirstPlayer()
+        val first = prompted.chooseTurnOrder(SeatId("seat-1"))
+        assertEquals(listOf(true, false, false, false), first.players.map { it.choosingTurnOrder })
+        assertTrue(first.players.all { it.buttonState == PBState.SELECT_FIRST_PLAYER && it.timer == null })
+
+        val changed = first.chooseTurnOrder(SeatId("seat-3"))
+        assertEquals(first, changed)
+        val cleared = changed.clearFirstPlayerPrompt()
+        assertTrue(cleared.players.all { !it.choosingTurnOrder && it.buttonState == PBState.NORMAL })
+        assertTrue(cleared.promptForFirstPlayer().players.all { !it.choosingTurnOrder })
+    }
+
+    @Test
+    fun turnOrderSelectionDoesNotOpenOutsideFirstPlayerPrompt() {
+        val playing = stateWithSeats(4)
+        assertEquals(playing, playing.chooseTurnOrder(SeatId("seat-1")))
+        val prompted = playing.promptForFirstPlayer()
+        assertEquals(prompted, prompted.chooseTurnOrder(SeatId("missing")))
+    }
+
+    @Test
     fun showsTimerOnlyOnActivePlayerSeat() {
         val timer = TurnTimer(seconds = 12, turn = 3)
         val state = LifeCounterState(
@@ -88,6 +110,14 @@ class LifeCounterStateTest {
         assertEquals(listOf(PBState.SELECT_FIRST_PLAYER, PBState.SELECT_FIRST_PLAYER), prompted.players.map { it.buttonState })
         assertEquals(listOf(PBState.NORMAL, PBState.NORMAL), cleared.players.map { it.buttonState })
         assertTrue(cleared.players.all { it.buttonBackStack.isEmpty() })
+    }
+
+    @Test
+    fun repeatedFirstPlayerPromptsStillReturnToNormalPlay() {
+        val prompted = stateWithSeats(4).promptForFirstPlayer().promptForFirstPlayer()
+        assertTrue(prompted.players.all { it.buttonBackStack == listOf(PBState.NORMAL) })
+        val cleared = prompted.clearFirstPlayerPrompt()
+        assertTrue(cleared.players.all { it.buttonState == PBState.NORMAL && it.buttonBackStack.isEmpty() })
     }
 
     @Test

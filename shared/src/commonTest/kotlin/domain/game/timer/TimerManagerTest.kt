@@ -10,6 +10,44 @@ import kotlin.test.assertNull
 
 class TimerManagerTest {
     @Test
+    fun restartCanSelectFirstPlayerWithoutEnablingTheTimer() = runTest {
+        val preferences = PreferencesRepository(TestSettings()).also { it.setNumPlayers(4) }
+        val repository = TimerStateRepository(TestSettings())
+        val manager = TimerManager(repository, preferences)
+        val host = FakeTimerManagerHost(playerCount = 4)
+        manager.attach(host)
+        manager.onTimerEnabledChange(false)
+        manager.reset(chooseFirstPlayer = true)
+        assertEquals(1, host.promptCount)
+        manager.handleFirstPlayerSelection(2, TurnOrder.COUNTERCLOCKWISE)
+        assertNull(host.activePlayerIndex)
+        assertNull(host.activeTimer)
+        assertEquals(2, repository.load()?.firstPlayer)
+        assertEquals(TurnOrder.COUNTERCLOCKWISE, repository.load()?.turnOrder)
+
+        manager.onTimerEnabledChange(true)
+        assertEquals(2, host.activePlayerIndex)
+        assertNotNull(host.activeTimer)
+        assertEquals(1, host.promptCount)
+        manager.detach()
+    }
+
+    @Test
+    fun selectedCounterclockwiseOrderIsUsedAndPersisted() = runTest {
+        val preferences = PreferencesRepository(TestSettings()).also { it.setNumPlayers(4) }
+        val repository = TimerStateRepository(TestSettings())
+        val manager = TimerManager(repository, preferences)
+        val host = FakeTimerManagerHost(playerCount = 4)
+        manager.attach(host)
+        manager.onTimerEnabledChange(true)
+        manager.handleFirstPlayerSelection(0, TurnOrder.COUNTERCLOCKWISE)
+        manager.moveTimer()
+        assertEquals(3, host.activePlayerIndex)
+        assertEquals(TurnOrder.COUNTERCLOCKWISE, repository.load()?.turnOrder)
+        manager.detach()
+    }
+
+    @Test
     fun promptsForFirstPlayerAndPublishesActiveTimerThroughHost() = runTest {
         val preferencesRepository = PreferencesRepository(TestSettings()).also {
             it.setNumPlayers(2)

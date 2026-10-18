@@ -26,7 +26,7 @@ interface LifeCounterScreenController {
     fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel?
     fun savePlayerPrefs()
     fun resetAllPrefs()
-    fun resetGameState(startingLife: Int? = null)
+    fun resetGameState(startingLife: Int? = null, chooseFirstPlayer: Boolean = false)
     fun incrementCounter(index: Int, value: Int)
     fun resetCounters()
     fun toggleDayNight()

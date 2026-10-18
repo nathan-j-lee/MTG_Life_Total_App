@@ -19,9 +19,9 @@ class StartupDestinationTest {
     }
 
     @Test
-    fun matchingVersionWithoutAutoSkipStartsAtPlayerSelect() {
+    fun matchingVersionWithoutAutoSkipBypassesTheOldHoldScreen() {
         assertEquals(
-            LifeLinkedRoute.PlayerSelect,
+            LifeLinkedRoute.LifeCounter,
             startupDestination(
                 currentVersion = VersionNumber("2.0.0"),
                 lastSplashScreenShown = "2.0.0",

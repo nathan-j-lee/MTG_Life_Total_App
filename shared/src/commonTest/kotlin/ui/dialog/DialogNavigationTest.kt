@@ -8,15 +8,15 @@ import ui.dialog.reset.choiceFor
 class DialogNavigationTest {
     @Test
     fun resetDifferentPlayersAndSelectFirstPlayerHasExplicitChoice() {
-        val choice = choiceFor(resetPlayerPreferences = true, chooseFirstPlayer = true)
+        val choice = choiceFor(resetPlayerPreferences = true)
 
         assertEquals(ResetGameChoice.DifferentPlayersSelectFirst, choice)
     }
 
     @Test
-    fun resetSamePlayersAndSkipFirstPlayerHasExplicitChoice() {
-        val choice = choiceFor(resetPlayerPreferences = false, chooseFirstPlayer = false)
+    fun resetSamePlayersSelectsFirstPlayerWithoutAnExtraSkipStep() {
+        val choice = choiceFor(resetPlayerPreferences = false)
 
-        assertEquals(ResetGameChoice.SamePlayersSkipFirst, choice)
+        assertEquals(ResetGameChoice.SamePlayersSelectFirst, choice)
     }
 }

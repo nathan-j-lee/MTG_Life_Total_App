@@ -85,8 +85,12 @@ fun LifeCounterState.promptForFirstPlayer(): LifeCounterState {
         players = players.map { player ->
             player.withButtonState(
                 buttonState = PBState.SELECT_FIRST_PLAYER,
-                buttonBackStack = player.buttonBackStack + player.buttonState
-            )
+                buttonBackStack = if (player.buttonState == PBState.SELECT_FIRST_PLAYER) {
+                    player.buttonBackStack
+                } else {
+                    player.buttonBackStack + player.buttonState
+                }
+            ).copy(choosingTurnOrder = false)
         }
     )
 }
@@ -95,6 +99,13 @@ fun LifeCounterState.clearFirstPlayerPrompt(): LifeCounterState {
     return players
         .filter { player -> player.buttonState == PBState.SELECT_FIRST_PLAYER }
         .fold(this) { current, player -> current.popPlayerButtonBackStack(player.seatId) }
+        .let { state -> state.copy(players = state.players.map { it.copy(choosingTurnOrder = false) }) }
+}
+
+fun LifeCounterState.chooseTurnOrder(seatId: SeatId): LifeCounterState {
+    if (players.any { it.choosingTurnOrder }) return this
+    if (players.none { it.seatId == seatId && it.buttonState == PBState.SELECT_FIRST_PLAYER }) return this
+    return copy(players = players.map { it.copy(choosingTurnOrder = it.seatId == seatId) })
 }
 
 fun LifeCounterState.setAllPlayerButtonStates(buttonState: PBState): LifeCounterState {

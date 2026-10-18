@@ -92,6 +92,7 @@ fun PlayerButton(
     onAction: (PlayerButtonAction) -> Unit,
     rotation: Float = 0f,
     turnTimerModifier: Modifier,
+    firstPlayerSelected: Boolean = false,
 ) {
     val currentDealerIsPartnered = (state.commanderState as? CommanderState.Active)?.dealer?.partnerMode == true
     val haptic = LocalHapticFeedback.current
@@ -384,7 +385,24 @@ fun PlayerButton(
 
                             PBState.SELECT_FIRST_PLAYER -> {
                                 val playerNumber = state.player.playerNum
-                                Box(
+                                if (state.choosingTurnOrder) {
+                                    TurnOrderSelector(
+                                        modifier = Modifier.fillMaxSize(),
+                                        textColor = state.player.textColor,
+                                        onSelect = { turnOrder ->
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            currentOnAction(PlayerButtonAction.SelectFirstPlayerWithOrder(turnOrder))
+                                        }
+                                    )
+                                } else if (firstPlayerSelected) {
+                                    LifeNumber(
+                                        modifier = playerInfoModifier.fillMaxSize(),
+                                        name = state.player.name,
+                                        textColor = state.player.textColor,
+                                        value = state.player.lifeTotal,
+                                        contentDescription = "P$playerNumber life total ${state.player.life}",
+                                    )
+                                } else Box(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .semantics {

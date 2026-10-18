@@ -126,13 +126,6 @@ fun SettingsDialogContent(
                     )
                     SettingsDialogButtonWithToggle(
                         modifier = Modifier.fillMaxWidth().height(buttonHeight),
-                        text = "Auto Skip Player Select",
-                        initialState = preferencesRepository.autoSkip.value,
-                        toggle = { preferencesRepository.setAutoSkip(it) },
-                        icon = vectorResource(Res.drawable.player_select_icon)
-                    )
-                    SettingsDialogButtonWithToggle(
-                        modifier = Modifier.fillMaxWidth().height(buttonHeight),
                         text = "Keep Screen On",
                         initialState = preferencesRepository.keepScreenOn.value,
                         toggle = {

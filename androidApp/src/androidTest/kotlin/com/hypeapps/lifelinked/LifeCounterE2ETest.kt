@@ -426,17 +426,10 @@ class LifeCounterE2ETest {
         waitForContentDescription(RESET_SAME_PLAYERS)
         composeRule.onNodeWithContentDescription(RESET_SAME_PLAYERS, useUnmergedTree = true)
             .performClick()
-        waitForContentDescription(RESET_SELECT_FIRST_PLAYER)
-        composeRule.onNodeWithContentDescription(RESET_SELECT_FIRST_PLAYER, useUnmergedTree = true)
-            .performClick()
-
-        waitForContentDescription(START_LIFE_COUNTER)
-        composeRule.onNodeWithContentDescription(START_LIFE_COUNTER, useUnmergedTree = true)
-            .performClick()
-
         waitForContentDescription(SELECT_P2_AS_FIRST_PLAYER)
         composeRule.onNodeWithContentDescription(SELECT_P2_AS_FIRST_PLAYER, useUnmergedTree = true)
             .performClick()
+        performSemanticClick("Clockwise")
 
         waitForContentDescription(P2_ACTIVE_TURN_TIMER)
         waitUntil("P1 has no active turn timer after reset first-player selection") {
@@ -446,7 +439,7 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun resetDifferentPlayersSkipFirstPlayerClearsCustomizations() {
+    fun resetDifferentPlayersUsesCounterSelectionAndClearsCustomizations() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
 
@@ -466,7 +459,7 @@ class LifeCounterE2ETest {
 
         openMiddleMenuItem(OPEN_RESET_GAME)
         performSemanticClick(RESET_DIFFERENT_PLAYERS)
-        performSemanticClick(RESET_SKIP_FIRST_PLAYER)
+        selectFirstPlayerAndDirection()
 
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, resetLife)
         waitUntil("P1 custom name removed after different-player reset") {
@@ -477,7 +470,7 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun playerSelectSkipReturnsToExistingGame() {
+    fun counterFirstPlayerSelectionPreservesExistingLifeTotals() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
 
@@ -487,7 +480,7 @@ class LifeCounterE2ETest {
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
 
         openMiddleMenuItem(OPEN_PLAYER_SELECT)
-        performSemanticClick(START_LIFE_COUNTER)
+        selectFirstPlayerAndDirection()
 
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, initialLife + 1)
         waitForContentDescription(MIDDLE_MENU_BUTTON)
@@ -510,12 +503,12 @@ class LifeCounterE2ETest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
-    fun playerSelectTwoFingerSelectionPreservesExistingRoster() {
+    fun counterFirstPlayerSelectionPreservesExistingRoster() {
         openLifeCounterIfNeeded()
         exitCommanderModeIfNeeded()
 
         openMiddleMenuItem(OPEN_PLAYER_SELECT)
-        performTwoFingerPlayerSelect()
+        selectFirstPlayerAndDirection()
 
         waitForContentDescription(P2_SETTINGS_BUTTON)
         waitForContentDescription(P3_SETTINGS_BUTTON)
@@ -530,10 +523,9 @@ class LifeCounterE2ETest {
 
         openMiddleMenuItem(OPEN_RESET_GAME)
         performSemanticClick(RESET_DIFFERENT_PLAYERS)
-        performSemanticClick(RESET_SELECT_FIRST_PLAYER)
-
-        waitForContentDescription(START_LIFE_COUNTER)
-        performTwoFingerPlayerSelect()
+        selectFirstPlayerAndDirection()
+        openMiddleMenuItem(OPEN_PLAYER_NUMBER)
+        performSemanticClick(SET_PLAYER_COUNT_2)
 
         waitForContentDescription(P2_SETTINGS_BUTTON)
         waitUntil("P3 removed after two-player reset selection") {
@@ -780,9 +772,7 @@ class LifeCounterE2ETest {
         waitForContentDescription(RESET_SAME_PLAYERS)
         composeRule.onNodeWithContentDescription(RESET_SAME_PLAYERS, useUnmergedTree = true)
             .performClick()
-        waitForContentDescription(RESET_SKIP_FIRST_PLAYER)
-        composeRule.onNodeWithContentDescription(RESET_SKIP_FIRST_PLAYER, useUnmergedTree = true)
-            .performClick()
+        selectFirstPlayerAndDirection()
         waitForIntContentDescription(P1_LIFE_TOTAL_PREFIX, resetLife)
 
         openMiddleMenuItem(OPEN_TABLE_COUNTERS)
@@ -1054,7 +1044,7 @@ class LifeCounterE2ETest {
 
         openMiddleMenuItem(OPEN_RESET_GAME)
         performSemanticClick(RESET_DIFFERENT_PLAYERS)
-        performSemanticClick(RESET_SKIP_FIRST_PLAYER)
+        selectFirstPlayerAndDirection()
 
         waitForContentDescription(P4_SETTINGS_BUTTON)
         val colors = listOf(
@@ -1145,9 +1135,7 @@ class LifeCounterE2ETest {
         waitForContentDescription(RESET_SAME_PLAYERS)
         composeRule.onNodeWithContentDescription(RESET_SAME_PLAYERS, useUnmergedTree = true)
             .performClick()
-        waitForContentDescription(RESET_SKIP_FIRST_PLAYER)
-        composeRule.onNodeWithContentDescription(RESET_SKIP_FIRST_PLAYER, useUnmergedTree = true)
-            .performClick()
+        selectFirstPlayerAndDirection()
 
         waitForContentDescription(P1_ALIVE)
         waitForContentDescription(P1_INCREASE_LIFE)
@@ -1311,6 +1299,12 @@ class LifeCounterE2ETest {
             .performTouchInput { click() }
     }
 
+    private fun selectFirstPlayerAndDirection() {
+        performSemanticClick(SELECT_P1_AS_FIRST_PLAYER)
+        performSemanticClick("Clockwise")
+        waitForContentDescription(P1_INCREASE_LIFE)
+    }
+
     private fun enableTurnTimerAndSelectP1() {
         openMiddleMenu()
         performSemanticClick(OPEN_APP_SETTINGS)
@@ -1329,6 +1323,7 @@ class LifeCounterE2ETest {
         waitForContentDescription(SELECT_P1_AS_FIRST_PLAYER)
         composeRule.onNodeWithContentDescription(SELECT_P1_AS_FIRST_PLAYER, useUnmergedTree = true)
             .performClick()
+        performSemanticClick("Clockwise")
     }
 
     private fun openP1Customization() {
@@ -1676,8 +1671,6 @@ class LifeCounterE2ETest {
         const val OPEN_RESET_GAME = "Open reset game"
         const val RESET_SAME_PLAYERS = "Same players"
         const val RESET_DIFFERENT_PLAYERS = "Different players"
-        const val RESET_SELECT_FIRST_PLAYER = "Select"
-        const val RESET_SKIP_FIRST_PLAYER = "Skip"
         const val BACK_IN_DIALOG = "Back in dialog"
         const val TOGGLE_THEME = "Toggle theme"
         const val THEME_STATE_PREFIX = "Theme "

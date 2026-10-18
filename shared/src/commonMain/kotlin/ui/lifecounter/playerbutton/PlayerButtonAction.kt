@@ -1,5 +1,6 @@
 package ui.lifecounter.playerbutton
 
+import domain.game.timer.TurnOrder
 import domain.state.game.GameCommand
 import domain.state.game.SeatId
 import ui.lifecounter.CounterType
@@ -23,6 +24,7 @@ sealed interface PlayerButtonAction {
     data object OpenCustomization : PlayerButtonAction
     data object CloseCustomization : PlayerButtonAction
     data object SelectFirstPlayer : PlayerButtonAction
+    data class SelectFirstPlayerWithOrder(val turnOrder: TurnOrder) : PlayerButtonAction
     data object MoveTimer : PlayerButtonAction
 }
 
@@ -90,6 +92,7 @@ fun PlayerButtonAction.toGameCommands(
         PlayerButtonAction.OpenCustomization,
         PlayerButtonAction.CloseCustomization,
         PlayerButtonAction.SelectFirstPlayer,
+        is PlayerButtonAction.SelectFirstPlayerWithOrder,
         PlayerButtonAction.MoveTimer -> emptyList()
     }
 }

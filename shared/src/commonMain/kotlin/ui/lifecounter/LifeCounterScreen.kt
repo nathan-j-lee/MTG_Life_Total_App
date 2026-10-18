@@ -157,6 +157,7 @@ fun LifeCounterScreen(
                                                 shape = RoundedCornerShape(0.dp, 0.dp, topCornerRadius, topCornerRadius)
                                             ),
                                         state = playerSeatState,
+                                        firstPlayerSelected = state.players.any { it.choosingTurnOrder },
                                         customizationViewModel = viewModel.customizationViewModelFor(seatId),
                                         onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },
                                         rotation = rotation,

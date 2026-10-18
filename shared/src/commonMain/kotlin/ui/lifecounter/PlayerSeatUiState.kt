@@ -15,5 +15,6 @@ data class PlayerSeatUiState(
     val timer: TurnTimer? = null,
     val commanderState: CommanderState = CommanderState.Inactive,
     val isDead: Boolean = false,
-    val backButtonVisible: Boolean = false
+    val backButtonVisible: Boolean = false,
+    val choosingTurnOrder: Boolean = false,
 )

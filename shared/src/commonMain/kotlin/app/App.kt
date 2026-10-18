@@ -25,8 +25,6 @@ import theme.LifeLinkedTheme
 import ui.components.InAppNotificationHost
 import ui.lifecounter.LifeCounterScreen
 import ui.lifecounter.LifeCounterViewModel
-import ui.playerselect.PlayerSelectScreen
-import ui.playerselect.PlayerSelectViewModel
 import ui.splash.SplashScreen
 import ui.tutorial.TutorialScreen
 import ui.tutorial.TutorialViewModel
@@ -52,7 +50,6 @@ fun LifeLinkedApp() {
             )
         }
 
-        var allowChangeNumPlayers by remember { mutableStateOf(true) }
         var firstLifeCounterNavigation by remember { mutableStateOf(true) }
 
         Box(Modifier.fillMaxSize()) {
@@ -92,15 +89,12 @@ fun LifeLinkedApp() {
                 }
 
                 composable(LifeLinkedRoute.PlayerSelect.route) {
-                    val viewModel = koinViewModel<PlayerSelectViewModel>()
-                    PlayerSelectScreen(
-                        viewModel = viewModel,
-                        allowChangeNumPlayers = allowChangeNumPlayers,
-                        goToLifeCounterScreen = {
-                            preferencesRepository.setGameStarted(true)
-                            navController.navigate(LifeLinkedRoute.LifeCounter.route)
+                    LaunchedEffect(Unit) {
+                        navController.navigate(LifeLinkedRoute.LifeCounter.route) {
+                            popUpTo(LifeLinkedRoute.PlayerSelect.route) { inclusive = true }
+                            launchSingleTop = true
                         }
-                    )
+                    }
                 }
 
                 composable(LifeLinkedRoute.LifeCounter.route) {
@@ -110,9 +104,8 @@ fun LifeLinkedApp() {
                     }
                     LifeCounterScreen(
                         viewModel = viewModel,
-                        goToPlayerSelectScreen = { changeNumPlayers ->
-                            allowChangeNumPlayers = changeNumPlayers
-                            navController.navigate(LifeLinkedRoute.PlayerSelect.route)
+                        goToPlayerSelectScreen = {
+                            viewModel.beginFirstPlayerSelection()
                             firstLifeCounterNavigation = false
                         },
                         goToTutorialScreen = {

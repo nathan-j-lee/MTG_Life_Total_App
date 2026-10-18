@@ -30,8 +30,8 @@ class GameTimer(
         }
     }
 
-    fun setFirstPlayer(index: Int?) {
-        _timerState.value = _timerState.value.copy(firstPlayer = index)
+    fun setFirstPlayer(index: Int?, turnOrder: TurnOrder = TurnOrder.CLOCKWISE) {
+        _timerState.value = _timerState.value.copy(firstPlayer = index, turnOrder = turnOrder)
     }
 
     fun setTimerEnabled(enabled: Boolean) {
@@ -61,7 +61,7 @@ class GameTimer(
 
         val nextPlayer = getNextPlayerIndex(currentState.activePlayerIndex)
         val firstActivePlayer = getNextPlayerIndex(
-            (currentState.firstPlayer - 1 + numPlayers) % numPlayers
+            (currentState.firstPlayer - currentState.turnOrder.step + numPlayers) % numPlayers
         )
 
         val currentTurn = currentState.turnTimer.turn
@@ -76,7 +76,7 @@ class GameTimer(
     private fun getNextPlayerIndex(currentIndex: Int): Int {
         var nextPlayerIndex = currentIndex
         do {
-            nextPlayerIndex = (nextPlayerIndex + 1) % numPlayers
+            nextPlayerIndex = (nextPlayerIndex + _timerState.value.turnOrder.step + numPlayers) % numPlayers
         } while (isPlayerDead?.invoke(nextPlayerIndex) == true && !allPlayersDead())
         return nextPlayerIndex
     }
@@ -98,5 +98,6 @@ class GameTimer(
 data class GameTimerState(
     val firstPlayer: Int? = null,
     val activePlayerIndex: Int? = null,
-    val turnTimer: TurnTimer? = null
+    val turnTimer: TurnTimer? = null,
+    val turnOrder: TurnOrder = TurnOrder.CLOCKWISE
 )

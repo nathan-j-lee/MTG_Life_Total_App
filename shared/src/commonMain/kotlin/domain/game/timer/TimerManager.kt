@@ -28,6 +28,7 @@ class TimerManager(
     private var observerJob: Job? = null
     private val gameTimer: GameTimer = GameTimer(timerStateRepository.load() ?: GameTimerState())
     private var timerJob: Job? = null
+    private var timerEnabled = preferencesRepository.turnTimer.value
 
     override fun detach() {
         super.detach()
@@ -42,10 +43,10 @@ class TimerManager(
         saveTimerState()
     }
 
-    fun handleFirstPlayerSelection(index: Int?) {
+    fun handleFirstPlayerSelection(index: Int?, turnOrder: TurnOrder = TurnOrder.CLOCKWISE) {
         requireAttached()
         clearFirstPlayerSelectionState()
-        gameTimer.setFirstPlayer(index)
+        gameTimer.setFirstPlayer(index, turnOrder)
         gameTimer.setTimerEnabled(true)
         updateHostWithTimer()
         saveTimerState()
@@ -56,6 +57,7 @@ class TimerManager(
     }
 
     suspend fun onTimerEnabledChange(timerEnabled: Boolean) {
+        this.timerEnabled = timerEnabled
         gameTimer.setTimerEnabled(timerEnabled)
         if (timerEnabled) {
             if (gameTimer.timerState.value.firstPlayer == null) {
@@ -69,12 +71,12 @@ class TimerManager(
         updateHostWithTimer()
     }
 
-    fun reset() {
+    fun reset(chooseFirstPlayer: Boolean = timerEnabled) {
         clearFirstPlayerSelectionState()
         gameTimer.reset()
         initializeGameTimer()
         updateHostWithTimer()
-        if (preferencesRepository.turnTimer.value) {
+        if (chooseFirstPlayer) {
             promptForFirstPlayer()
         }
         saveTimerState()
@@ -105,8 +107,8 @@ class TimerManager(
         val host = requireAttached()
         val timerState = gameTimer.timerState.value
         host.showTimer(
-            activePlayerIndex = timerState.activePlayerIndex,
-            timer = timerState.turnTimer
+            activePlayerIndex = timerState.activePlayerIndex.takeIf { timerEnabled },
+            timer = timerState.turnTimer.takeIf { timerEnabled }
         )
     }
 

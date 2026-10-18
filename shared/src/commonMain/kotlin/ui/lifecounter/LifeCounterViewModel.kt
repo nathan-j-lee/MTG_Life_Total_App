@@ -163,7 +163,17 @@ open class LifeCounterViewModel(
             }
             PlayerButtonAction.ToggleCommanderDealer -> onCommanderButtonAction(seatId)
             PlayerButtonAction.SelectFirstPlayer -> {
-                timerManager.handleFirstPlayerSelection(index = seatId.toPlayerIndex())
+                _state.update { it.chooseTurnOrder(seatId) }
+            }
+            is PlayerButtonAction.SelectFirstPlayerWithOrder -> {
+                if (_state.value.players.any {
+                    it.seatId == seatId && it.choosingTurnOrder && it.buttonState == PBState.SELECT_FIRST_PLAYER
+                }) {
+                    timerManager.handleFirstPlayerSelection(
+                        index = seatId.toPlayerIndex(),
+                        turnOrder = action.turnOrder
+                    )
+                }
             }
             PlayerButtonAction.MoveTimer -> {
                 if (_state.value.players.any { it.seatId == seatId && it.timer != null }) {
@@ -323,11 +333,15 @@ open class LifeCounterViewModel(
         }
     }
 
-    override fun resetGameState(startingLife: Int?) {
+    override fun resetGameState(startingLife: Int?, chooseFirstPlayer: Boolean) {
         dispatchGameCommand(GameCommand.ResetGame(startingLife = startingLife))
         planeChaseViewModel.onResetGame()
         setAllButtonStates(PBState.NORMAL)
-        timerManager.reset()
+        timerManager.reset(chooseFirstPlayer = chooseFirstPlayer || preferencesRepository.turnTimer.value)
+    }
+
+    fun beginFirstPlayerSelection() {
+        timerManager.reset(chooseFirstPlayer = true)
     }
 
     override fun toggleKeepScreenOn(value: Boolean?) {

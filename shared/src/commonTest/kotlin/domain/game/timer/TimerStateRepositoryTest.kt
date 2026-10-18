@@ -13,7 +13,8 @@ class TimerStateRepositoryTest {
         val state = GameTimerState(
             firstPlayer = 1,
             activePlayerIndex = 2,
-            turnTimer = TurnTimer(seconds = 12, turn = 3)
+            turnTimer = TurnTimer(seconds = 12, turn = 3),
+            turnOrder = TurnOrder.COUNTERCLOCKWISE
         )
 
         repository.save(state)
@@ -24,6 +25,17 @@ class TimerStateRepositoryTest {
 
         assertNull(repository.load())
         assertNull(settings.getStringOrNull(TimerStateRepository.StateKey))
+    }
+
+    @Test
+    fun legacyTimerStateWithoutDirectionDefaultsToClockwise() {
+        val settings = TestSettings()
+        settings.putString(TimerStateRepository.StateKey,
+            """{"firstPlayer":0,"activePlayerIndex":1,"turnTimer":{"seconds":12,"turn":3}}""")
+        val restored = TimerStateRepository(settings).load()
+        assertEquals(TurnOrder.CLOCKWISE, restored?.turnOrder)
+        assertEquals(1, restored?.activePlayerIndex)
+        assertEquals(TurnTimer(12, 3), restored?.turnTimer)
     }
 
     @Test

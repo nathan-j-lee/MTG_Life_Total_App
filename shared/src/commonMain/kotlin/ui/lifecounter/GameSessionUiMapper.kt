@@ -72,6 +72,7 @@ object GameSessionUiMapper {
             buttonState = buttonState,
             buttonBackStack = buttonBackStack,
             showCustomizeMenu = current?.showCustomizeMenu ?: false,
+            choosingTurnOrder = current?.choosingTurnOrder ?: false,
             timer = current?.timer,
             commanderState = commanderDealerPlayer?.let(ui.lifecounter.playerbutton.CommanderState::Active)
                 ?: ui.lifecounter.playerbutton.CommanderState.Inactive,

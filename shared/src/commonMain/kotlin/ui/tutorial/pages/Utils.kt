@@ -335,6 +335,7 @@ class TutorialLifeCounterController(
                 applyCustomizationAndClose(seatId)
             }
             PlayerButtonAction.SelectFirstPlayer,
+            is PlayerButtonAction.SelectFirstPlayerWithOrder,
             PlayerButtonAction.MoveTimer -> Unit
         }
         afterPlayerAction(seatId, action, _state.value)
@@ -348,7 +349,7 @@ class TutorialLifeCounterController(
 
     override fun resetAllPrefs() = Unit
 
-    override fun resetGameState(startingLife: Int?) {
+    override fun resetGameState(startingLife: Int?, chooseFirstPlayer: Boolean) {
         _state.value = _state.value
             .setAllPlayerButtonStates(PBState.NORMAL)
             .copy(middleButtonState = MiddleButtonState.DEFAULT)

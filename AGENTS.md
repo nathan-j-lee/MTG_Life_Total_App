@@ -38,6 +38,29 @@ Multiplatform and Compose Multiplatform for Android and iOS.
 - The timer badge itself remains tappable to pass the turn.
 - Passing turns leaves all life totals unchanged.
 
+### Turn order
+
+- The old press-and-hold first-player screen is bypassed. Restarting a game,
+  after choosing Same players or Different players, goes directly to the
+  first-player counter boxes, without an extra Select/Skip step. This also
+  works with the timer disabled; choosing a direction does not enable the timer.
+- The Player Select menu action now opens these counter boxes. Startup no
+  longer routes through the hold screen, and its obsolete Auto Skip setting
+  has been removed from the settings UI.
+
+- Initially every counter shows "Select first player". Tapping one locks in
+  that first player, then shows inline CCW (left) and CW (right) arrow buttons
+  only inside their counter. No popup is used.
+- The other counters show their life totals and remain inactive until a direction
+  is chosen. The choices rotate with the first player's counter; selecting a
+  direction starts their timer and enables normal play on all counters.
+- Player seats are numbered clockwise around the layout; counterclockwise play
+  traverses them in reverse. Both directions skip eliminated players and advance
+  the round when returning to the first living player in the chosen order.
+- The chosen direction is saved with the timer and survives app restarts.
+- Older saved timers without a direction default to clockwise.
+- A new game resets the direction to clockwise until a new choice is made.
+
 ## Development environment
 
 - Gradle JVM: JetBrains JDK 21.0.11; the project requests Java 21.
@@ -150,6 +173,9 @@ For control changes, build the debug APK and test on the virtual phone. Verify
 left/right taps, repeating side holds, and that the middle never changes life.
 For timer changes, verify active-player passing, inactive-player taps, a single
 advance on a middle hold, correct timer placement, and unchanged life totals.
+For turn-order changes, test both directions, wraparound and new rounds,
+eliminated-player skipping, all counters initially offering first-player
+selection, the first-player lock, inline button placement, and restoration.
 Restore life totals changed during testing. These behaviors were checked on the
 Android 16 virtual phone after the life-control and timer changes.
 

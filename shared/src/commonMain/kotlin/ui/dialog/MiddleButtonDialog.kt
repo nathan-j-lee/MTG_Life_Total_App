@@ -42,7 +42,6 @@ import ui.dialog.middle.MiddleButtonMenuDialog
 import ui.dialog.navigation.DialogScaffold
 import ui.dialog.planechase.ChoosePlanesDialogContent
 import ui.dialog.planechase.PlaneChaseDialogContent
-import ui.dialog.reset.ResetGameChoice
 import ui.dialog.reset.ResetGameDialog
 import ui.dialog.scryfall.ScryfallDialogContent
 import ui.dialog.settings.AboutMeDialogContent
@@ -226,14 +225,9 @@ fun MiddleButtonDialog(
                 if (choice.resetPlayerPreferences) {
                     viewModel.resetAllPrefs()
                 }
-                viewModel.resetGameState()
+                viewModel.resetGameState(chooseFirstPlayer = true)
                 showResetDialog = false
-                if (choice.chooseFirstPlayer) {
-                    onDismiss()
-                    goToPlayerSelectScreen(choice == ResetGameChoice.DifferentPlayersSelectFirst)
-                } else {
-                    triggerEnterAnimation()
-                }
+                onDismiss()
             }
         )
     }
