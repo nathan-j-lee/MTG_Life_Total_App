@@ -69,6 +69,7 @@ fun LifeCounterScreen(
     val state by viewModel.state.collectAsState()
     val scope = rememberCoroutineScope()
     val numPlayers by viewModel.numPlayers.collectAsState()
+    val activeTurnPlayer = state.currentTurnPlayer(numPlayers)
     val alt4PlayerLayout by viewModel.alt4PlayerLayout.collectAsState()
     val darkTheme by viewModel.darkTheme.collectAsState()
     val dimensions = LocalDimensions.current
@@ -157,6 +158,8 @@ fun LifeCounterScreen(
                                                 shape = RoundedCornerShape(0.dp, 0.dp, topCornerRadius, topCornerRadius)
                                             ),
                                         state = playerSeatState,
+                                        isCurrentTurn = playerSeatState.seatId == activeTurnPlayer?.seatId,
+                                        turnNumber = state.turnNumber,
                                         customizationViewModel = viewModel.customizationViewModelFor(seatId),
                                         onAction = { action -> viewModel.onPlayerButtonAction(seatId, action) },
                                         rotation = rotation,

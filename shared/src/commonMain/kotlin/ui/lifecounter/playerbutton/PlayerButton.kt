@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -88,6 +89,8 @@ import ui.modifier.rotateVertically
 fun PlayerButton(
     modifier: Modifier = Modifier,
     state: PlayerSeatUiState,
+    isCurrentTurn: Boolean = false,
+    turnNumber: Int = 1,
     customizationViewModel: CustomizationViewModel?,
     onAction: (PlayerButtonAction) -> Unit,
     rotation: Float = 0f,
@@ -775,6 +778,29 @@ fun PlayerButton(
                     contentDescription = "Pass turn to next player",
                     onPress = { currentOnAction(PlayerButtonAction.PassTurn) },
                 )
+                if (isCurrentTurn && !state.isDead) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .semantics {
+                                contentDescription = "Turn $turnNumber, ${state.player.name}'s turn"
+                            },
+                        shape = RoundedCornerShape(50),
+                        color = state.player.color.copy(alpha = 0.9f),
+                        tonalElevation = 3.dp
+                    ) {
+                        Text(
+                            text = "Turn $turnNumber · P${state.player.playerNum}",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            color = state.player.textColor,
+                            fontSize = (timerTextSize * 0.85f).scaledSp,
+                            lineHeight = (timerTextSize * 0.85f).scaledSp,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                        )
+                    }
+                }
             }
         }
     }

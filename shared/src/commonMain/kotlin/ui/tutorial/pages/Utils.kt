@@ -339,7 +339,7 @@ class TutorialLifeCounterController(
             PlayerButtonAction.SelectFirstPlayer,
             PlayerButtonAction.MoveTimer,
             PlayerButtonAction.ToggleChessTimer -> Unit
-            PlayerButtonAction.PassTurn -> passChessTimerTurn()
+            PlayerButtonAction.PassTurn -> passChessTimerTurn(seatId)
         }
         afterPlayerAction(seatId, action, _state.value)
     }
@@ -352,8 +352,8 @@ class TutorialLifeCounterController(
         _state.value = _state.value.toggleChessTimer(seatId)
     }
 
-    override fun passChessTimerTurn() {
-        _state.value = _state.value.passChessTimerTurn(numPlayers.value)
+    override fun passChessTimerTurn(currentSeatId: SeatId) {
+        _state.value = _state.value.passChessTimerTurn(numPlayers.value, currentSeatId)
     }
 
     override fun savePlayerPrefs() = Unit

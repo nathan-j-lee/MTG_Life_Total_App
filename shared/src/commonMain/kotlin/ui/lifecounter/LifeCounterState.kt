@@ -16,6 +16,7 @@ data class LifeCounterState(
     val players: List<PlayerSeatUiState> = emptyList(),
     val modalStack: LifeCounterModalStack = LifeCounterModalStack.Empty,
     val middleButtonState: MiddleButtonState = MiddleButtonState.DEFAULT,
+    val turnNumber: Int = 1,
     val runningChessTimerSeat: SeatId? = null,
     val selectedChessTimerSeat: SeatId? = null,
 ) {
@@ -36,17 +37,30 @@ fun LifeCounterState.tickChessTimer(): LifeCounterState {
 }
 
 fun LifeCounterState.resetChessTimers(): LifeCounterState = copy(
+    turnNumber = 1,
     runningChessTimerSeat = null,
     selectedChessTimerSeat = null,
     players = players.map { it.copy(chessTimerSeconds = 0, chessTimerRunning = false) }
 )
 
-fun LifeCounterState.passChessTimerTurn(playerCount: Int): LifeCounterState {
+fun LifeCounterState.passChessTimerTurn(playerCount: Int, currentSeatId: SeatId): LifeCounterState {
     val activePlayers = players.take(playerCount).filterNot { it.isDead }
     if (activePlayers.isEmpty()) return copy(runningChessTimerSeat = null)
-    val currentIndex = activePlayers.indexOfFirst { it.seatId == selectedChessTimerSeat }
+    val currentIndex = activePlayers.indexOfFirst { it.seatId == currentSeatId }
     val nextPlayer = activePlayers[(currentIndex + 1).mod(activePlayers.size)]
     return withRunningChessTimer(nextPlayer.seatId, selectedSeatId = nextPlayer.seatId)
+        .copy(turnNumber = turnNumber + 1)
+}
+
+fun LifeCounterState.currentTurnPlayer(playerCount: Int): PlayerSeatUiState? {
+    val gamePlayers = players.take(playerCount)
+    val currentIndex = gamePlayers.indexOfFirst { it.seatId == selectedChessTimerSeat }
+    if (currentIndex < 0) return gamePlayers.firstOrNull { !it.isDead }
+
+    return (0 until gamePlayers.size)
+        .asSequence()
+        .map { offset -> gamePlayers[(currentIndex + offset).mod(gamePlayers.size)] }
+        .firstOrNull { !it.isDead }
 }
 
 private fun LifeCounterState.withRunningChessTimer(seatId: SeatId?, selectedSeatId: SeatId?): LifeCounterState = copy(

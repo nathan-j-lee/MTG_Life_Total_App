@@ -200,7 +200,7 @@ open class LifeCounterViewModel(
                 }
             }
             PlayerButtonAction.ToggleChessTimer -> toggleChessTimer(seatId)
-            PlayerButtonAction.PassTurn -> passChessTimerTurn()
+            PlayerButtonAction.PassTurn -> passChessTimerTurn(seatId)
             PlayerButtonAction.OpenCustomization,
             PlayerButtonAction.CloseCustomization -> onPlayerCustomizationAction(seatId, action)
             else -> dispatchPlayerButtonAction(seatId, action)
@@ -211,8 +211,8 @@ open class LifeCounterViewModel(
         _state.update { it.toggleChessTimer(seatId) }
     }
 
-    override fun passChessTimerTurn() {
-        _state.update { it.passChessTimerTurn(playerCount) }
+    override fun passChessTimerTurn(currentSeatId: SeatId) {
+        _state.update { it.passChessTimerTurn(playerCount, currentSeatId) }
     }
 
     override fun customizationViewModelFor(seatId: SeatId): CustomizationViewModel? {
